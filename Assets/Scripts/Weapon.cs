@@ -1,5 +1,6 @@
 using UnityEditor.XR;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class Weapon : MonoBehaviour
 {
@@ -23,6 +24,8 @@ public class Weapon : MonoBehaviour
     private bool triggeredPress;
     private LevelManager lm;
 
+    public UnityEvent reloadEnemy;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -32,7 +35,9 @@ public class Weapon : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(triggeredPress == true)
+        timePass += Time.deltaTime;
+
+        if (triggeredPress == true)
         {
             Shoot();
             if(automatic == false)
@@ -40,8 +45,6 @@ public class Weapon : MonoBehaviour
                 triggeredPress = false;
             }
         }
-
-        timePass += Time.deltaTime;
     }
 
     public void Shoot()
@@ -65,6 +68,29 @@ public class Weapon : MonoBehaviour
             currentBullets--;
             timePass = 0;
             lm.UpdateBullets();
+        }
+    }
+
+    public void EnemyShoot(Transform _player)
+    {
+
+        if (timePass >= fireRate)
+        {
+            Debug.Log("Shoot");
+
+            if (currentBullets > 0)
+            {
+                Debug.Log("Te he dado");
+                GameObject bulletClone = Instantiate(bulletPrefab, bulletSpawnPoint.position, bulletSpawnPoint.rotation);
+                Vector3 direction = (_player.position + new Vector3(0, 1.4f, 0) - bulletSpawnPoint.position).normalized;
+                bulletClone.GetComponent<Rigidbody>().linearVelocity = direction * bulletSpeed;
+                currentBullets--;
+                timePass = 0;
+            }
+            else
+            {
+                reloadEnemy.Invoke();
+            }
         }
     }
 

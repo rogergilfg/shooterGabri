@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Net.NetworkInformation;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -19,8 +21,23 @@ public class PlayerController : MonoBehaviour
     private float sensibility;
     [SerializeField]
     private Transform followTarget;
+    [SerializeField]
+    private float healthSpeed;
+    private LineRenderer lineRenderer;
+    [SerializeField]
+    private Transform grenadeSpawnPoint;
+    [SerializeField]
+    private float throwForce;
+    [SerializeField] private GameObject grenadePrefab;
+
+    [SerializeField]
+    private Transform leftHand, rightHand;
+
     private int weaponIndex;
     private LevelManager lm;
+    [SerializeField]
+    private float timeToStartHealth;
+    private IEnumerator corrutinaCurar;
 
     private void Awake()
     {
@@ -28,6 +45,7 @@ public class PlayerController : MonoBehaviour
         playerInput = GetComponent<PlayerInput>();
         rb = GetComponent<Rigidbody>();
         lm = GameObject.Find("LevelManager").GetComponent<LevelManager>();
+        lineRenderer = grenadeSpawnPoint.GetComponent<LineRenderer>();
     }
 
     private void Update()
@@ -37,6 +55,19 @@ public class PlayerController : MonoBehaviour
         animator.SetFloat(ANIMATOR_VERTICAL, leftStickInput.y);
         Vector3 movement = ((transform.forward * leftStickInput.y) + (transform.right * leftStickInput.x)) * speed;
         rb.linearVelocity = new Vector3(movement.x, rb.linearVelocity.y, movement.z);
+
+        //Line renderer grenade
+        if (lineRenderer.enabled == true)
+        {
+            Vector3 speed = (Camera.main.transform.forward + Vector3.up) * throwForce;
+            lineRenderer.positionCount = 100;
+            for (int i = 0; i < lineRenderer.positionCount; i++)
+            {
+                float t /*t de tiempo*/ = i * 0.1f;
+                Vector3 position = grenadeSpawnPoint.position + speed * t + 0.5f * Physics.gravity * t * t;
+                lineRenderer.SetPosition(i, position);
+            }
+        }
     }
 
     private void LateUpdate()
@@ -79,4 +110,71 @@ public class PlayerController : MonoBehaviour
         playerInput.actions["Shoot"].Enable();
 
     }
+
+    public void TakeDamage(float damage)
+    {
+        if(corrutinaCurar != null)
+        {
+            StopCoroutine(corrutinaCurar);
+        }
+
+
+        GameManager.instance.GetGameData.CurrentLife -= damage;
+        if(GameManager.instance.GetGameData.CurrentLife < 0)
+        {
+            //Muerte
+            GameObject ragdollPrefab = Resources.Load<GameObject>("SwatRagdoll");
+            Instantiate(ragdollPrefab, transform.position, transform.rotation);
+            gameObject.SetActive(false);
+        }
+        else
+        {
+            corrutinaCurar = Health();
+            StartCoroutine(corrutinaCurar);
+        }
+        lm.UpdateLife();
+    }
+
+    IEnumerator Health()
+    {
+        yield return new WaitForSeconds(timeToStartHealth);
+        while (GameManager.instance.GetGameData.CurrentLife < GameManager.instance.GetGameData.MaxLife) 
+        {
+            GameManager.instance.GetGameData.CurrentLife = Mathf.Clamp(GameManager.instance.GetGameData.CurrentLife + (healthSpeed * Time.deltaTime), 0, GameManager.instance.GetGameData.MaxLife);
+            lm.UpdateLife();
+            yield return null;
+        }
+    }
+
+    public void ThrowGrenade(InputAction.CallbackContext context)
+    {
+        if (context.started)
+        {
+            animator.SetBool("Granade", true);
+            lineRenderer.enabled = true;
+            GameManager.instance.GetGameData.Weapons[GameManager.instance.GetGameData.WeaponIndex].transform.parent = leftHand;
+            Instantiate(grenadePrefab, grenadeSpawnPoint.position, grenadeSpawnPoint.rotation, grenadeSpawnPoint);
+        }
+
+        if(context.canceled)
+        {
+            animator.SetBool("Granade", false);
+        }
+    }
+
+    public void SoltarGrenade()
+    {
+        lineRenderer.enabled = false;
+        var grenade = grenadeSpawnPoint.GetChild(0).transform;
+        grenade.parent = null;
+
+        var grenadeRigidbody = grenade.GetComponent<Rigidbody>();
+        var grenadeCollider = grenade.GetComponent<Collider>();
+
+        grenadeCollider.enabled = true;
+        grenadeRigidbody.isKinematic = false;
+        grenadeRigidbody.linearVelocity = (Camera.main.transform.forward + Vector3.up) * throwForce;
+        grenade.GetComponent<Grenade>().countDownActive = true;
+    }
+
 }
