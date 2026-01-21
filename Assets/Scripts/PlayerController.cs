@@ -102,6 +102,7 @@ public class PlayerController : MonoBehaviour
             GameManager.instance.GetGameData.Weapons[GameManager.instance.GetGameData.WeaponIndex].Reload();
             lm.UpdateBullets();
             playerInput.actions["Shoot"].Disable();
+            playerInput.actions["ThrowGrenade"].Disable();
         }
     }
 
@@ -154,6 +155,7 @@ public class PlayerController : MonoBehaviour
             lineRenderer.enabled = true;
             GameManager.instance.GetGameData.Weapons[GameManager.instance.GetGameData.WeaponIndex].transform.parent = leftHand;
             Instantiate(grenadePrefab, grenadeSpawnPoint.position, grenadeSpawnPoint.rotation, grenadeSpawnPoint);
+            playerInput.actions["Shoot"].Disable();
         }
 
         if(context.canceled)
@@ -177,4 +179,9 @@ public class PlayerController : MonoBehaviour
         grenade.GetComponent<Grenade>().countDownActive = true;
     }
 
+    public void FinishGrenade()
+    {
+        CanShoot();
+        GameManager.instance.GetGameData.Weapons[GameManager.instance.GetGameData.WeaponIndex].transform.parent = rightHand;
+    }
 }
