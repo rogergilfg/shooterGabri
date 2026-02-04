@@ -5,7 +5,7 @@ public class CameraMultiplayerController : MonoBehaviour
 {
 
     private Transform player;
-    [SerializeField] private Vector3 camOffset;
+    public Vector3 camOffset;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
