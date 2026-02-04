@@ -1,4 +1,7 @@
+using ExitGames.Client.Photon;
 using Photon.Pun;
+using Photon.Pun.Demo.SlotRacer.Utils;
+using Photon.Realtime;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -14,11 +17,22 @@ public class MultiplayerController : MonoBehaviourPunCallbacks, IPunObservable
 
     private Rigidbody rb;
     private PlayerInput playerInput;
+    private float life;
+    bool ejemplo;
 
 
     public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {
-        //throw new System.NotImplementedException();
+        if (stream.IsWriting == true)
+        {
+            stream.SendNext(ejemplo);
+            stream.SendNext(life);
+        }
+        else
+        {
+            ejemplo = (bool)stream.ReceiveNext();
+            life = (float)stream.ReceiveNext();
+        }
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -96,4 +110,55 @@ public class MultiplayerController : MonoBehaviourPunCallbacks, IPunObservable
             }
         }
     }
+
+    //EN LA BALA/////////////////////////////////////////////////////////
+
+    private void OnCollisionEnter(Collision other)
+    {
+        if(photonView.IsMine == true)
+        {
+            if(other.gameObject.tag == "Enemy")
+            {
+                //other.gameObject.GetComponent<EnemyController>().TakeDamage(10, photonView.Owner);
+            }
+        }
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////
+    //EN EL SCRIPT DEL ENEMIGO
+
+    void TakeDamage(float damage, Player player)
+    {
+        life -= damage;
+        if(life <= 0)
+        {
+            int deaths;
+            //Muerte
+            if (player.CustomProperties.ContainsKey("Muertes") == true)
+            {
+                object muertes;
+                player.CustomProperties.TryGetValue("Muertes", out muertes);
+                deaths = (int)muertes;
+                deaths += 1;
+
+                Hashtable muerdeaths = new Hashtable { { "Muertes", deaths } };
+                player.SetCustomProperties(muerdeaths);
+            }
+            else
+            {
+                deaths = 1;
+            }
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    ///
+    void VerMuertes()
+    {
+        for(int i = 0; i<PhotonNetwork.CurrentRoom.PlayerCount; i++)
+        {
+            PhotonNetwork.CurrentRoom.Players[i].CustomProperties.TryGetValue("Muertes", out var nombrevariable);
+        }
+    }
+
 }
