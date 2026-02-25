@@ -136,3 +136,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damage: 2
+  bulletHolePrefab: {fileID: 3867487793302295705, guid: 3ebd4afe401cfe74e81620bebc720663, type: 3}

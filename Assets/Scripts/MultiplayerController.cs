@@ -17,6 +17,7 @@ public class MultiplayerController : MonoBehaviourPunCallbacks, IPunObservable
 
     private Rigidbody rb;
     private PlayerInput playerInput;
+    private Animator animator;
     private float life;
     bool ejemplo;
 
@@ -40,6 +41,7 @@ public class MultiplayerController : MonoBehaviourPunCallbacks, IPunObservable
     {
         playerInput = GetComponent<PlayerInput>();
         rb = GetComponent<Rigidbody>();
+        animator = GetComponent<Animator>();
         if(photonView.IsMine == true)
         {
             Camera.main.GetComponent<CameraMultiplayerController>().SetPlayer(transform);
@@ -57,7 +59,11 @@ public class MultiplayerController : MonoBehaviourPunCallbacks, IPunObservable
             Vector3 arriba = Vector3.forward + Vector3.left;
             Vector3 derecha = Vector3.forward + Vector3.right;
             Vector3 movement = ((arriba * leftStickInput.y) + (derecha * leftStickInput.x)) * speed;
-            rb.linearVelocity = new Vector3(movement.x, rb.linearVelocity.y, movement.z);
+
+            animator.SetBool("Run", movement != Vector3.zero);
+
+
+                rb.linearVelocity = new Vector3(movement.x, rb.linearVelocity.y, movement.z);
 
             //Mirar
             float y = Camera.main.GetComponent<CameraMultiplayerController>().camOffset.y;

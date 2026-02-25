@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Net.NetworkInformation;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -29,7 +30,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     private float throwForce;
     [SerializeField] private GameObject grenadePrefab;
-
+    [SerializeField] private Transform spineBone;
+    [SerializeField] private float spineOffset;
     [SerializeField]
     private Transform leftHand, rightHand;
 
@@ -46,7 +48,8 @@ public class PlayerController : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         lm = GameObject.Find("LevelManager").GetComponent<LevelManager>();
         lineRenderer = grenadeSpawnPoint.GetComponent<LineRenderer>();
-    }
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;    }
 
     private void Update()
     {
@@ -75,6 +78,7 @@ public class PlayerController : MonoBehaviour
         Vector2 lookInput = playerInput.actions["Look"].ReadValue<Vector2>();
         followTarget.localEulerAngles += new Vector3(lookInput.y*sensibility*Time.deltaTime, 0, 0);
         transform.eulerAngles += new Vector3(0, lookInput.x * sensibility * Time.deltaTime, 0);
+        spineBone.localEulerAngles = new Vector3(followTarget.localEulerAngles.x + spineOffset, spineBone.localEulerAngles.y, spineBone.localEulerAngles.z);
     }
 
     public void Shoot(InputAction.CallbackContext context)
