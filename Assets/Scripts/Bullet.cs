@@ -11,7 +11,7 @@ public class Bullet : MonoBehaviour
         if (collision.gameObject.CompareTag("Enemy"))
         {
             Debug.Log("Auch");
-            collision.gameObject.GetComponent<EnemyController>().TakeDamage(damage);
+            collision.gameObject.GetComponent<EnemyController>().TakeDamage(damage, );
             //Instanciariamos sangre
         }
 

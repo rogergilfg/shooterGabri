@@ -114,12 +114,13 @@ public class EnemyController : MonoBehaviour
         following = true;
         if (health<= 0)
         {
-            GameObject ragdollPrefab = Resources.Load<GameObject>("EnemyRagdoll");
-            Instantiate(ragdollPrefab, transform.position, transform.rotation);
+            //GameObject ragdollPrefab = Resources.Load<GameObject>("EnemyRagdoll");
+            //Instantiate(ragdollPrefab, transform.position, transform.rotation);
             gameObject.SetActive(false);
         }
         else
         {
+            GameManager.instance.GetGameData.CurrentLife -= 10;
             animator.SetTrigger("Hit");
         }
     }

@@ -133,7 +133,7 @@ public class MultiplayerController : MonoBehaviourPunCallbacks, IPunObservable
     //////////////////////////////////////////////////////////////////////////////////////
     //EN EL SCRIPT DEL ENEMIGO
 
-    void TakeDamage(float damage, Player player)
+    public void TakeDamage(float damage, Player player)
     {
         life -= damage;
         if(life <= 0)
