@@ -1,4 +1,4 @@
-using Photon.Realtime;
+Ôªøusing Photon.Realtime;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -10,13 +10,10 @@ public class EnemyMultiplayerController : MonoBehaviour
     [Header("Referencia al Player")]
     [SerializeField] private Transform player;
 
-    [Header("DetecciÛn")]
-    [SerializeField] private float detectionRange = 100f;
+    [Header("Detecci√≥n")]
+    [SerializeField] private float detectionRange = 100f; 
 
-    [Header("Movimiento")]
-    [SerializeField] private float moveSpeed = 3.5f; // <-- Nueva variable
-
-    [Header("DaÒo")]
+    [Header("Da√±o")]
     [SerializeField] private float damage = 10f;
     [SerializeField] private float attackCooldown = 1f;
 
@@ -31,15 +28,16 @@ public class EnemyMultiplayerController : MonoBehaviour
         agent = GetComponent<NavMeshAgent>();
         animator = GetComponent<Animator>();
 
-        agent.speed = moveSpeed;
+                    playerDetected = true;
 
-        // Buscar al player autom·ticamente si no est· asignado
+        // Buscar al player autom√°ticamente si no est√° asignado
         if (player == null)
         {
             GameObject playerObj = GameObject.FindWithTag("Player");
             if (playerObj != null)
                 player = playerObj.transform;
         }
+
     }
 
     void Update()
@@ -53,17 +51,7 @@ public class EnemyMultiplayerController : MonoBehaviour
 
         float distanceToPlayer = Vector3.Distance(transform.position, player.position);
 
-        // DetecciÛn por rango
-        if (distanceToPlayer <= detectionRange)
-        {
-            playerDetected = true;
-        }
-        else
-        {
-            
-        }
-
-        // Actualizar par·metro del Animator
+        // Actualizar par√°metro del Animator
         animator.SetBool("PlayerDetected", playerDetected);
 
         // Moverse hacia el player si detectado
@@ -80,7 +68,7 @@ public class EnemyMultiplayerController : MonoBehaviour
         if (attackTimer > 0f)
             attackTimer -= Time.deltaTime;
 
-        // Atacar si est· en rango
+        // Atacar si est√° en rango
         if (playerInRange && attackTimer <= 0f)
         {
             AttackPlayer();
@@ -120,7 +108,7 @@ public class EnemyMultiplayerController : MonoBehaviour
         }
     }
 
-    // Visualizar el rango de detecciÛn en el Editor
+    // Visualizar el rango de detecci√≥n en el Editor
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.red;
@@ -128,6 +116,11 @@ public class EnemyMultiplayerController : MonoBehaviour
     }
 
     public void TakeDamage(float damage, Player owner)
+    {
+
+    }
+
+    public void EnemyDead()
     {
 
     }
