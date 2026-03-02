@@ -86,7 +86,7 @@ public class MultiplayerController : MonoBehaviourPunCallbacks, IPunObservable
             if (context.performed == true)
             {
                 GameObject bulletClone = Instantiate(bulletPrefab, bulletSpawnPoint.position, bulletSpawnPoint.rotation);
-                bulletClone.GetComponent<Rigidbody>().linearVelocity = bulletClone.transform.forward * 20;
+                bulletClone.GetComponent<Rigidbody>().linearVelocity = bulletClone.transform.forward * 40;
 
                 photonView.RPC("CopyShoot", RpcTarget.Others);
             }
