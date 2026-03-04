@@ -28,7 +28,7 @@ public class EnemyMultiplayerController : MonoBehaviour
         agent = GetComponent<NavMeshAgent>();
         animator = GetComponent<Animator>();
 
-                    playerDetected = true;
+        playerDetected = true;
 
         // Buscar al player automáticamente si no está asignado
         if (player == null)
