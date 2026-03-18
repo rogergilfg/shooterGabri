@@ -1,4 +1,4 @@
-using ExitGames.Client.Photon;
+﻿using ExitGames.Client.Photon;
 using Photon.Pun;
 using Photon.Pun.Demo.SlotRacer.Utils;
 using Photon.Realtime;
@@ -36,23 +36,20 @@ public class MultiplayerController : MonoBehaviourPunCallbacks, IPunObservable
         }
     }
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         playerInput = GetComponent<PlayerInput>();
         rb = GetComponent<Rigidbody>();
         animator = GetComponent<Animator>();
-        if(photonView.IsMine == true)
+        if (photonView.IsMine == true)
         {
             Camera.main.GetComponent<CameraMultiplayerController>().SetPlayer(transform);
         }
     }
 
-    // Update is called once per frame
     void Update()
     {
-
-        if(photonView.IsMine == true)
+        if (photonView.IsMine == true)
         {
             //Movimiento
             Vector2 leftStickInput = playerInput.actions[MOVEMENT_ACTION_NAME].ReadValue<Vector2>();
@@ -62,8 +59,7 @@ public class MultiplayerController : MonoBehaviourPunCallbacks, IPunObservable
 
             animator.SetBool("Run", movement != Vector3.zero);
 
-
-                rb.linearVelocity = new Vector3(movement.x, rb.linearVelocity.y, movement.z);
+            rb.linearVelocity = new Vector3(movement.x, rb.linearVelocity.y, movement.z);
 
             //Mirar
             float y = Camera.main.GetComponent<CameraMultiplayerController>().camOffset.y;
@@ -72,21 +68,28 @@ public class MultiplayerController : MonoBehaviourPunCallbacks, IPunObservable
             Vector3 plauerRot = transform.eulerAngles;
             transform.LookAt(worldPos);
             transform.eulerAngles = new Vector3(plauerRot.x, transform.eulerAngles.y, plauerRot.z);
-        }   
+        }
     }
 
     /// <summary>
     /// Opcion 1 de disparo online
     /// </summary>
-    /// <param name="context"></param>
     public void Shoot(InputAction.CallbackContext context)
     {
-        if(photonView.IsMine == true)
+        if (photonView.IsMine == true)
         {
             if (context.performed == true)
             {
                 GameObject bulletClone = Instantiate(bulletPrefab, bulletSpawnPoint.position, bulletSpawnPoint.rotation);
                 bulletClone.GetComponent<Rigidbody>().linearVelocity = bulletClone.transform.forward * 40;
+
+                // 👇 Asignar owner y daño a la bala
+                MultiBullet bullet = bulletClone.GetComponent<MultiBullet>();
+                if (bullet != null)
+                {
+                    bullet.owner = photonView.Owner;
+                    bullet.damage = 10f;
+                }
 
                 photonView.RPC("CopyShoot", RpcTarget.Others);
             }
@@ -94,7 +97,6 @@ public class MultiplayerController : MonoBehaviourPunCallbacks, IPunObservable
     }
 
     [PunRPC]
-
     void CopyShoot()
     {
         GameObject bulletClone = Instantiate(bulletPrefab, bulletSpawnPoint.position, bulletSpawnPoint.rotation);
@@ -109,7 +111,7 @@ public class MultiplayerController : MonoBehaviourPunCallbacks, IPunObservable
     {
         if (photonView.IsMine == true)
         {
-            if(context.performed == true)
+            if (context.performed == true)
             {
                 GameObject bulletClone = PhotonNetwork.Instantiate("MultiplayerBullet", bulletSpawnPoint.position, bulletSpawnPoint.rotation);
                 bulletClone.GetComponent<Rigidbody>().linearVelocity = bulletClone.transform.forward * 20;
@@ -121,9 +123,9 @@ public class MultiplayerController : MonoBehaviourPunCallbacks, IPunObservable
 
     private void OnCollisionEnter(Collision other)
     {
-        if(photonView.IsMine == true)
+        if (photonView.IsMine == true)
         {
-            if(other.gameObject.tag == "Enemy")
+            if (other.gameObject.tag == "Enemy")
             {
                 //other.gameObject.GetComponent<EnemyController>().TakeDamage(10, photonView.Owner);
             }
@@ -136,7 +138,7 @@ public class MultiplayerController : MonoBehaviourPunCallbacks, IPunObservable
     public void TakeDamage(float damage, Player player)
     {
         life -= damage;
-        if(life <= 0)
+        if (life <= 0)
         {
             int deaths;
             //Muerte
@@ -158,13 +160,11 @@ public class MultiplayerController : MonoBehaviourPunCallbacks, IPunObservable
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    ///
     void VerMuertes()
     {
-        for(int i = 0; i<PhotonNetwork.CurrentRoom.PlayerCount; i++)
+        for (int i = 0; i < PhotonNetwork.CurrentRoom.PlayerCount; i++)
         {
             PhotonNetwork.CurrentRoom.Players[i].CustomProperties.TryGetValue("Muertes", out var nombrevariable);
         }
     }
-
 }

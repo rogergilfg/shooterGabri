@@ -67,8 +67,8 @@ public class SpawnManager : MonoBehaviour
 
     void Update()
     {
-        // Limpiar referencias de enemigos destruidos
-        enemigosActivos.RemoveAll(e => e == null);
+        // Limpiar referencias de enemigos destruidos/desactivados
+        enemigosActivos.RemoveAll(e => e == null || !e.activeInHierarchy);
         ActualizarContadorEnemigos();
 
         // Detectar si la horda terminó
@@ -91,7 +91,6 @@ public class SpawnManager : MonoBehaviour
         {
             if (hordas_infinitas)
             {
-                // Generar horda extra infinita
                 hordaInfinitaContador++;
                 Horda hordaExtra = new Horda
                 {
@@ -150,7 +149,6 @@ public class SpawnManager : MonoBehaviour
         juegoTerminado = true;
         SetTextoEstado("¡TODAS LAS HORDAS COMPLETADAS!", colorVictoria);
         Debug.Log("🏆 ¡Todas las hordas completadas!");
-        // Aquí puedes disparar tu lógica de victoria
     }
 
     // ============================================================
@@ -171,28 +169,28 @@ public class SpawnManager : MonoBehaviour
             return;
         }
 
-        // Elegir SpawnPoint aleatorio
         Transform spawnElegido = spawnPoints[Random.Range(0, spawnPoints.Count)];
-
         GameObject nuevoEnemigo = Instantiate(prefabEnemigo, spawnElegido.position, spawnElegido.rotation);
         enemigosActivos.Add(nuevoEnemigo);
 
-        // Escuchar la muerte del enemigo
+        // 👇 Suscribirse al evento OnDeath del enemigo
         EnemyMultiplayerController hp = nuevoEnemigo.GetComponent<EnemyMultiplayerController>();
         if (hp != null)
         {
-            //hp.EnemyDead += () => OnEnemigoMuerto(nuevoEnemigo);
+            hp.OnDeath += OnEnemigoMuerto;
         }
         else
         {
-            Debug.LogWarning($"⚠️ El prefab '{prefabEnemigo.name}' no tiene componente EnemyHealth. La detección de muerte no funcionará.");
+            Debug.LogWarning($"⚠️ El prefab '{prefabEnemigo.name}' no tiene componente EnemyMultiplayerController.");
         }
     }
 
+    // 👇 Se llama automáticamente cuando el enemigo dispara OnDeath
     void OnEnemigoMuerto(GameObject enemigo)
     {
         enemigosActivos.Remove(enemigo);
         Debug.Log($"💀 Enemigo eliminado. Quedan: {enemigosActivos.Count}");
+        ActualizarContadorEnemigos();
     }
 
     // ============================================================
@@ -244,7 +242,7 @@ public class SpawnManager : MonoBehaviour
     }
 
     // ============================================================
-    //  GIZMOS - Visualizar SpawnPoints en la escena
+    //  GIZMOS
     // ============================================================
 
     void OnDrawGizmos()

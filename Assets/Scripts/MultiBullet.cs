@@ -1,31 +1,21 @@
 using Photon.Pun;
 using Photon.Realtime;
 using UnityEngine;
-using UnityEngine.Rendering;
 
-public class MultiBullet : MonoBehaviourPunCallbacks, IPunObservable
+public class MultiBullet : MonoBehaviourPun
 {
-
-    public float damage;
+    public float damage = 10f;
     public Player owner;
-
-    public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
-    {
-        throw new System.NotImplementedException();
-    }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.tag == "Enemy")
+        if (other.CompareTag("Enemy"))
         {
-            Debug.Log("Enemy");
-            if (photonView.IsMine == true)
-            {
-                if (other.gameObject.tag == "Enemy")
-                {
-                    other.gameObject.GetComponent<EnemyMultiplayerController>().TakeDamage(10, photonView.Owner);
-                }
-            }
+            Debug.Log("Si");
+            other.gameObject.GetComponent<EnemyMultiplayerController>()
+                ?.TakeDamage(damage, owner);
+
+            Destroy(gameObject);
         }
     }
 }
