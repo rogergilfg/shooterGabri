@@ -27,8 +27,8 @@ public class EnemyMultiplayerController : MonoBehaviour
     private bool playerDetected = false;
     private bool playerInRange = false;
     private float attackTimer = 0f;
+    private bool isDead = false;
 
-    // 👇 El SpawnManager se suscribe a este evento para saber cuándo muere el enemigo
     public event Action<GameObject> OnDeath;
 
     void Start()
@@ -49,7 +49,7 @@ public class EnemyMultiplayerController : MonoBehaviour
 
     void Update()
     {
-        if (player == null) return;
+        if (player == null || isDead) return;
 
         Vector3 direction = (player.position - transform.position).normalized;
         direction.y = 0f;
@@ -111,6 +111,8 @@ public class EnemyMultiplayerController : MonoBehaviour
 
     public void TakeDamage(float dmg, Player owner)
     {
+        if (isDead) return;
+
         life -= dmg;
         Debug.Log($"[Enemy] Vida restante: {life}");
 
@@ -120,10 +122,31 @@ public class EnemyMultiplayerController : MonoBehaviour
 
     public void EnemyDead()
     {
+        if (isDead) return;
+
+        isDead = true;
         Debug.Log("[Enemy] Muerto");
 
-        // 👇 Notifica al SpawnManager antes de desactivarse
+        agent.isStopped = true;
+        animator.SetTrigger("Muerte");
+
         OnDeath?.Invoke(gameObject);
+
+        StartCoroutine(DeactivateAfterAnimation());
+    }
+
+    private IEnumerator DeactivateAfterAnimation()
+    {
+        yield return null;
+
+        AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+        while (!stateInfo.IsName("Muerte"))
+        {
+            yield return null;
+            stateInfo = animator.GetCurrentAnimatorStateInfo(0);
+        }
+
+        yield return new WaitForSeconds(stateInfo.length);
 
         gameObject.SetActive(false);
     }
